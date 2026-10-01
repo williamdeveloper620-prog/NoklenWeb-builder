@@ -1,0 +1,6 @@
+{
+  "name": "NoklenWeb Builder",
+  "description": "صانع المواقع المتقدم NoklenWeb Builder - صمم صفحاتك بمكونات مرئية، تحكم في ملفات الموقع وكود Firebase، وصدّر واستورد مشروعك بسهولة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
