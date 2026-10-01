@@ -22,16 +22,13 @@ export function exportProjectJson(project: Project) {
 export async function exportProjectZip(project: Project): Promise<void> {
   const zip = new JSZip();
 
-  // 1. Generate up-to-date index.html
+  // 1. Generate full up-to-date, self-contained index.html with all pages, styling and scripts
   const htmlContent = generateFullWebsiteHtml(project);
   zip.file('index.html', htmlContent);
 
-  // 2. Include all virtual files in the project
+  // 2. Include all additional virtual files (styles.css, app.js, markdown, etc.)
   project.files.forEach(file => {
-    // If user edited index.html directly, keep their version unless empty
-    if (file.name === 'index.html' && file.content.trim().length > 50) {
-      zip.file('index.html', file.content);
-    } else {
+    if (file.name !== 'index.html') {
       zip.file(file.name, file.content);
     }
   });

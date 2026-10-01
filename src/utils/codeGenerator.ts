@@ -267,9 +267,11 @@ export function renderComponentToHtml(component: BuilderComponent): string {
 }
 
 export function generatePageHtml(page: Page, project: Project): string {
+  const activeId = project.activePageId || (project.pages.find(p => p.isHome) || project.pages[0])?.id;
+  const isActive = page.id === activeId || (!project.pages.some(p => p.id === activeId) && page.isHome);
   const componentsHtml = page.components.map(renderComponentToHtml).join('\n');
   return `
-    <div id="page-${page.id}" class="noklen-page-view ${page.id === project.activePageId ? 'active' : 'hidden'}">
+    <div id="page-${page.id}" class="noklen-page-view ${isActive ? 'active' : 'hidden'}">
       <div class="max-w-4xl mx-auto px-4 py-6">
         ${componentsHtml}
       </div>
@@ -277,6 +279,7 @@ export function generatePageHtml(page: Page, project: Project): string {
 }
 
 export function generateFullWebsiteHtml(project: Project): string {
+  const activeId = project.activePageId || (project.pages.find(p => p.isHome) || project.pages[0])?.id || '';
   const pagesHtml = project.pages.map(page => generatePageHtml(page, project)).join('\n');
   const pagesJson = JSON.stringify(project.pages.map(p => ({ id: p.id, title: p.title, slug: p.slug, isHome: p.isHome })));
 
@@ -312,7 +315,7 @@ export function generateFullWebsiteHtml(project: Project): string {
   <!-- Client-side Router and Interaction Script -->
   <script>
     const PAGES = ${pagesJson};
-    let currentPageId = "${project.activePageId}";
+    let currentPageId = "${activeId}";
 
     function navigateToPage(pageId) {
       if (!pageId) return;
@@ -333,6 +336,18 @@ export function generateFullWebsiteHtml(project: Project): string {
         console.log("Navigated to:", targetPage.title);
       }
     }
+
+    // Safety fallback on page load: ensure at least one page is visible
+    document.addEventListener('DOMContentLoaded', () => {
+      const activeVisible = document.querySelector('.noklen-page-view.active');
+      if (!activeVisible) {
+        const firstPage = document.querySelector('.noklen-page-view');
+        if (firstPage) {
+          firstPage.classList.remove('hidden');
+          firstPage.classList.add('active');
+        }
+      }
+    });
 
     // Dynamic Choice to Button ID Mutation Listener
     document.addEventListener('change', (e) => {
@@ -471,9 +486,6 @@ export function generateFullWebsiteHtml(project: Project): string {
 
     window.navigateToPage = navigateToPage;
   </script>
-
-  <!-- Optional Firebase Integration -->
-  <script type="module" src="firebase-config.js"></script>
 </body>
 </html>`;
 }
